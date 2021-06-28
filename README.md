@@ -7,6 +7,7 @@ Currently the following features are integrated:
 - switch active context globally
 - import a context from one file into the default config file
 - export a context from the default config file into a separate file
+- rename a context
 - delete a context
 ## Usage
 
@@ -22,8 +23,16 @@ kubecfg help <command>
 kubecfg list
 # Switch to a context in interactive mode
 kubecfg switch
-# Switch direct to a context
+# Switch directly to a context
 kubecfg switch <context name>
+# Rename a context
+kubecfg rename <old context name> <new context name> 
+# Import a context file into the default config. Glob pattern is allowed.
+kubecfg import <path to kubeconfig file> 
+# Exports a context from the default config into a new file
+kubecfg export <context name> 
+# Deletes a context and all associated data from the default config
+kubecfg delete <context name> 
 ```
 # Installation
 - Download the file for your system from the release section

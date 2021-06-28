@@ -6,8 +6,6 @@ import (
 	k8s "k8s.io/client-go/tools/clientcmd/api/v1"
 )
 
-//https://github.com/kubernetes/kubernetes/blob/37da905c0c673c9cb07ca724384d37e725602a0c/staging/src/k8s.io/client-go/tools/clientcmd/api/v1/types.go
-
 // GetContextByName returns the first context with the given name
 func GetContextByName(config *k8s.Config, contextName *string) (*k8s.NamedContext, error) {
 	for i := range config.Contexts {
