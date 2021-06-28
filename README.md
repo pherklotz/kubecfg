@@ -29,3 +29,6 @@ kubecfg switch <context name>
 - Download the file for your system from the release section
 - Rename the file to kubecfg
 - Add the directory to your PATH variable 
+
+# License
+The project is under the Apache 2.0 License
