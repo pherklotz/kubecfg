@@ -39,5 +39,9 @@ kubecfg delete <context name>
 - Rename the file to kubecfg
 - Add the directory to your PATH variable 
 
+# Disclaimer
+Kubecfg is open source and you use it at your own risk.
+We are not responsible for any data loses. Be careful and backup your data regularly.
+
 # License
 The project is under the Apache 2.0 License
