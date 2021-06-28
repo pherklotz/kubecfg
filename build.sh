@@ -1,28 +1,26 @@
 #!/bin/sh
 
-OUT=dir
+OUT=bin
 if test -d "$OUT"; then
     echo ""
 else
     mkdir $OUT
 fi
 
-export GOOS=darwin
-export GOARCH=amd64
-echo Build amd64/darwin
-go build -o bin/kubecfg-amd64-darwin
-export GOARCH=arm64
-echo Build arm64/darwin
-go build -o bin/kubecfg-arm64-darwin
+build() {
+export GOOS=$1
+export GOARCH=$2
+echo Build $GOOS/$GOARCH
 
-export GOOS=linux
-export GOARCH=amd64
-echo Build amd64/linux
-go build -o bin/kubecfg-amd64-linux
+suffix=""
+if test $1 = windows; then
+    suffix=".exe"
+fi
 
-export GOOS=windows
-export GOARCH=amd64
-echo Build amd64/windows
-go build -o bin/kubecfg-amd64-win.exe
+go build -o $OUT/kubecfg-$GOARCH-$GOOS$suffix
+}
 
-sleep 10
+build darwin amd64
+build darwin arm64
+build linux amd64
+build windows amd64 
