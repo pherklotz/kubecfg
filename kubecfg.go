@@ -3,15 +3,18 @@
 package main
 
 import (
-	"kubecfg/commands"
 	"os"
 
 	"github.com/integrii/flaggy"
+	"github.com/pherklotz/kubecfg/commands"
 )
+
+const VERSION = "1.1"
 
 func main() {
 	flaggy.SetName("kubecfg")
 	flaggy.SetDescription("Small helper to manage kubernetes configurations and there contexts")
+	flaggy.SetVersion(VERSION)
 	flaggy.DebugMode = false
 
 	cmdList := []commands.Command{

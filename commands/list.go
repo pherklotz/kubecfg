@@ -2,9 +2,10 @@ package commands
 
 import (
 	"fmt"
-	"kubecfg/common"
 	"log"
 	"sort"
+
+	"github.com/pherklotz/kubecfg/common"
 
 	"github.com/integrii/flaggy"
 )

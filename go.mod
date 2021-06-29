@@ -1,11 +1,10 @@
-module kubecfg
+module github.com/pherklotz/kubecfg
 
 go 1.15
 
 require (
 	github.com/integrii/flaggy v1.4.4
 	github.com/stretchr/testify v1.7.0
-	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/client-go v0.21.2 // indirect
-	sigs.k8s.io/yaml v1.2.0 // indirect
+	k8s.io/client-go v0.21.2
+	sigs.k8s.io/yaml v1.2.0
 )

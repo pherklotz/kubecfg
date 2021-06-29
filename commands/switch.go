@@ -3,11 +3,12 @@ package commands
 import (
 	"bufio"
 	"fmt"
-	"kubecfg/common"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/pherklotz/kubecfg/common"
 
 	"github.com/integrii/flaggy"
 	k8s "k8s.io/client-go/tools/clientcmd/api/v1"

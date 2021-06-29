@@ -2,9 +2,10 @@ package commands
 
 import (
 	"fmt"
-	"kubecfg/common"
 	"log"
 	"regexp"
+
+	"github.com/pherklotz/kubecfg/common"
 
 	"github.com/integrii/flaggy"
 	k8s "k8s.io/client-go/tools/clientcmd/api/v1"

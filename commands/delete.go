@@ -1,10 +1,10 @@
 package commands
 
 import (
-	"kubecfg/common"
 	"log"
 
 	"github.com/integrii/flaggy"
+	"github.com/pherklotz/kubecfg/common"
 	k8s "k8s.io/client-go/tools/clientcmd/api/v1"
 )
 

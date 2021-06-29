@@ -8,19 +8,22 @@ else
 fi
 
 build() {
-export GOOS=$1
-export GOARCH=$2
-echo Build $GOOS/$GOARCH
+    export GOOS=$1
+    export GOARCH=$2
+    echo Build $GOOS/$GOARCH
 
-suffix=""
-if test $1 = windows; then
-    suffix=".exe"
-fi
+    outFile=$OUT/kubecfg
+    if test $1 = windows; then
+        outFile=$outFile.exe
+    fi
 
-go build -o $OUT/kubecfg-$GOARCH-$GOOS$suffix
+    go build -o $outFile
+   # zip -j $OUT/kubecfg-$GOOS-$GOARCH.zip $OUT/LICENSE $outFile
+   # rm $outFile
 }
 
-build darwin amd64
-build darwin arm64
+cp LICENSE $OUT
 build linux amd64
 build windows amd64 
+build darwin amd64
+build darwin arm64
