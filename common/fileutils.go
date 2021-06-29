@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"gopkg.in/yaml.v2"
 	k8s "k8s.io/client-go/tools/clientcmd/api/v1"
+	"sigs.k8s.io/yaml"
 )
 
 // ReadKubeConfigYaml deserializes a kubeconfig yaml file into a KubeConfig object.

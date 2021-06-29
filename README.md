@@ -1,4 +1,4 @@
-# kubecfg v1.0
+# kubecfg
 Command line tool for easy management of kubernetes configurations. This tool might help you if you often have to change between several kubernetes configurations. Therefor it will mostly modify the default kubernetes config file (~/.kube/config). So you switch the kubernetes context globally and not only for this shell!
 
 Currently the following features are integrated:
