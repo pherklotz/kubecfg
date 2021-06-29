@@ -18,8 +18,8 @@ build() {
     fi
 
     go build -o $outFile
-   # zip -j $OUT/kubecfg-$GOOS-$GOARCH.zip $OUT/LICENSE $outFile
-   # rm $outFile
+    zip -j $OUT/kubecfg-$GOOS-$GOARCH.zip $OUT/LICENSE $outFile
+    rm $outFile
 }
 
 cp LICENSE $OUT
