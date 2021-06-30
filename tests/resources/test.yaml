@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Config
+current-context: "ContextA"
+contexts:
+- name: "ContextA"
+  context:
+    user: "UserA"
+    cluster: "ClusterA"
+- name: "ContextB"
+  context:
+    user: "UserB"
+    cluster: "ClusterB"
+clusters:
+- name: "ClusterA"
+  cluster:
+    server: "https://example.com/Cluster/A"
+    certificate-authority-data: "Q2x1c3RlckFfQXV0aERhdGE="
+- name: "ClusterB"
+  cluster:
+    server: "https://example.com/Cluster/B"
+    certificate-authority-data: "Q2x1c3RlckJfQXV0aERhdGE="
+users:
+- name: "UserA"
+  user:
+    token: "AuthTokenA"
+- name: "UserB"
+  user:
+    client-certificate-data: "VXNlckJfQ2xpZW50Q2VydERhdGE="
+    client-key-data: "VXNlckJfQ2xpZW50S2V5RGF0YQ=="

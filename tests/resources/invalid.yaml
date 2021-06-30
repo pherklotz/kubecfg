@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Config
+current-context: "ContextA"
+contexts:
+- name: "ContextA"
+context:
+user: "UserA"
+cluster: "ClusterA"
+- name: "ClusterA"
+cluster:
+server: "https://example.com/Cluster/A"
+certificate-authority-data: "Q2x1c3RlckFfQXV0aERhdGE="
+users:
+- name: "UserA"
+user:
+token: "AuthTokenA"
