@@ -1,5 +1,4 @@
 // command line tool to work with kubernetes configurations
-
 package main
 
 import (

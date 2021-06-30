@@ -30,7 +30,7 @@ func TestRenameCommand_Rename(t *testing.T) {
 	assert.Equal(t, newName, changedKubeconfig.Clusters[0].Name, "KubeConf.Clusters[0].Name")
 	assert.Equal(t, newName, changedKubeconfig.Contexts[0].Name, "KubeConf.Contexts[0].Name")
 	assert.Equal(t, newName, changedKubeconfig.Contexts[0].Context.Cluster, "KubeConf.Contexts[0].Context.Cluster")
-	assert.Equal(t, newName, changedKubeconfig.Contexts[0].Context.User, "KubeConf.Contexts[0].Context.User")
-	assert.Equal(t, newName, changedKubeconfig.Users[0].Name, "KubeConf.Users[0].Name")
+	assert.Equal(t, newName, changedKubeconfig.Contexts[0].Context.AuthInfo, "KubeConf.Contexts[0].Context.User")
+	assert.Equal(t, newName, changedKubeconfig.AuthInfos[0].Name, "KubeConf.Users[0].Name")
 	assert.Equal(t, newName, changedKubeconfig.CurrentContext, "KubeConf.CurrentContext")
 }
