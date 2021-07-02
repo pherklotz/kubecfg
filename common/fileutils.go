@@ -12,19 +12,18 @@ import (
 )
 
 // ReadKubeConfigYaml deserializes a kubeconfig yaml file into a KubeConfig object.
-func ReadKubeConfigYaml(filePath string) (kc *k8s.Config, err error) {
-	err = IsRegularFile(filePath)
-	if err != nil {
-		return
+func ReadKubeConfigYaml(filePath string) (*k8s.Config, error) {
+	if !IsRegularFile(filePath) {
+		return nil, fmt.Errorf("Path '%s' is no file.", filePath)
 	}
 
 	fileContent, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		return
+		return nil, err
 	}
-	kc = &k8s.Config{}
+	kc := &k8s.Config{}
 	err = yaml.Unmarshal(fileContent, kc)
-	return
+	return kc, err
 }
 
 // FileExists reports whether the named file or directory exists.
@@ -38,22 +37,19 @@ func FileExists(name string) bool {
 }
 
 // IsRegularFile checks whether the path is a regular file or not.
-func IsRegularFile(path string) error {
+func IsRegularFile(path string) bool {
 	sourceFileStat, err := os.Stat(path)
 	if err != nil {
-		return err
+		log.Println("Can not read file stats", err)
+		return false
 	}
-	if !sourceFileStat.Mode().IsRegular() {
-		return fmt.Errorf("'%s' is not a regular file", path)
-	}
-	return nil
+	return sourceFileStat.Mode().IsRegular()
 }
 
 // CopyFile copies a file
 func CopyFile(src, target string) error {
-	err := IsRegularFile(src)
-	if err != nil {
-		return err
+	if !IsRegularFile(src) {
+		return fmt.Errorf("Path '%s' is no file.", src)
 	}
 
 	source, err := os.Open(src)
