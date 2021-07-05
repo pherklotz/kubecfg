@@ -3,6 +3,7 @@ package common
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,6 +11,17 @@ import (
 )
 
 const TEST_RESOURCE_DIR = "../tests/resources/"
+
+func getTestWorkingDir() string {
+	// to prevent access denied errors in github actions
+	workspace := os.Getenv("GITHUB_WORKSPACE")
+	if workspace == "" {
+		workspace = "../tests/temp/"
+	} else if !strings.HasSuffix(workspace, string(os.PathSeparator)) {
+		workspace = workspace + string(os.PathSeparator)
+	}
+	return workspace
+}
 
 func TestReadKubeConfigYaml_success(t *testing.T) {
 	config, err := ReadKubeConfigYaml(TEST_RESOURCE_DIR + "test.yaml")
@@ -66,11 +78,11 @@ func TestIsRegularFile(t *testing.T) {
 
 func TestCopyFile(t *testing.T) {
 	source := TEST_RESOURCE_DIR + "test.yaml"
-	targetFolder := "../tests/temp/"
-	err := os.MkdirAll(targetFolder, os.ModeDir)
+	targetDir := getTestWorkingDir()
+	err := os.MkdirAll(targetDir, os.ModeDir)
 	assert.Nil(t, err)
 
-	target := targetFolder + "test_copy.yaml"
+	target := targetDir + "test_copy.yaml"
 	err = CopyFile(source, target)
 	assert.Nil(t, err)
 	defer os.Remove(target)
@@ -82,7 +94,7 @@ func TestCopyFile(t *testing.T) {
 }
 
 func TestWriteAndReadKubeConfigYaml(t *testing.T) {
-	target := "../tests/temp/new_config.yaml"
+	target := getTestWorkingDir() + "new_config.yaml"
 	defer os.Remove(target)
 	expectedConfig := k8s.Config{}
 	WriteKubeConfigYaml(target, &expectedConfig)
@@ -90,5 +102,4 @@ func TestWriteAndReadKubeConfigYaml(t *testing.T) {
 	assert.Nil(t, err)
 
 	assert.ObjectsAreEqual(expectedConfig, actualConfig)
-
 }
