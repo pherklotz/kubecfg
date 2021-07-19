@@ -103,3 +103,9 @@ func TestWriteAndReadKubeConfigYaml(t *testing.T) {
 
 	assert.ObjectsAreEqual(expectedConfig, actualConfig)
 }
+
+func TestGetDefaultKubeconfigPath(t *testing.T) {
+	configPath, err := GetDefaultKubeconfigPath()
+	assert.Nil(t, err)
+	assert.NotNil(t, configPath)
+}
