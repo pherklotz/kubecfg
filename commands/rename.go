@@ -35,11 +35,7 @@ func (cmdArgs *RenameCommand) GetCommand() *flaggy.Subcommand {
 }
 
 //Execute the rename command
-func (cmdArgs *RenameCommand) Execute() {
-	path, err := common.GetDefaultKubeconfigPath()
-	if err != nil {
-		log.Fatalf("Failed to load default config path.\nError: %v\n", err)
-	}
+func (cmdArgs *RenameCommand) Execute(path string) {
 	config, err := common.ReadKubeConfigYaml(path)
 	if err != nil {
 		log.Fatalf("Failed to load config from path '%s'.\nError: %v\n", path, err)

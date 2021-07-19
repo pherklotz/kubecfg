@@ -6,5 +6,5 @@ import "github.com/integrii/flaggy"
 type Command interface {
 	GetCommand() *flaggy.Subcommand
 
-	Execute()
+	Execute(targetFilePath string)
 }

@@ -40,7 +40,7 @@ func (cmdArgs *ImportCommand) GetCommand() *flaggy.Subcommand {
 }
 
 //Execute the import command
-func (cmdArgs *ImportCommand) Execute() {
+func (cmdArgs *ImportCommand) Execute(targetFilePath string) {
 	var ctxNameProvider common.ContextNameProvider
 	if cmdArgs.name == "" {
 		ctxNameProvider = &common.RandomNameProvider{}
@@ -48,11 +48,11 @@ func (cmdArgs *ImportCommand) Execute() {
 		ctxNameProvider = &common.SeedNameProvider{Seed: cmdArgs.name}
 	}
 
-	addConfig(&cmdArgs.filePattern, &cmdArgs.activate, ctxNameProvider)
+	addConfig(&cmdArgs.filePattern, targetFilePath, &cmdArgs.activate, ctxNameProvider)
 }
 
 // addConfig searchs for kubeconfig files and add them to the default config
-func addConfig(sourcePattern *string, activate *bool, ctxNameProvider common.ContextNameProvider) {
+func addConfig(sourcePattern *string, targetConfFile string, activate *bool, ctxNameProvider common.ContextNameProvider) {
 	configFiles, err := filepath.Glob(*sourcePattern)
 	if err != nil {
 		log.Fatalln("Wrong source file pattern '", *sourcePattern, "':", err)
@@ -62,10 +62,6 @@ func addConfig(sourcePattern *string, activate *bool, ctxNameProvider common.Con
 		log.Println("Found no matching files to source pattern: ", *sourcePattern)
 	}
 
-	targetConfFile, err := common.GetDefaultKubeconfigPath()
-	if err != nil {
-		log.Fatalln("can not read user home: ", err)
-	}
 	targetConf, err := common.ReadKubeConfigYaml(targetConfFile)
 	if err != nil {
 		log.Fatalln("Can not parse kubeconfig yaml in file '", targetConfFile, "':", err)

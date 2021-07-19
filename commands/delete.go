@@ -33,11 +33,7 @@ func (cmdArgs *DeleteCommand) GetCommand() *flaggy.Subcommand {
 }
 
 //Execute the delete command
-func (cmdArgs *DeleteCommand) Execute() {
-	path, err := common.GetDefaultKubeconfigPath()
-	if err != nil {
-		log.Fatalf("Failed to load config.\nError: %v\n", err)
-	}
+func (cmdArgs *DeleteCommand) Execute(path string) {
 	config, err := common.ReadKubeConfigYaml(path)
 	if err != nil {
 		log.Fatalf("Failed to load config from path: %s\nError: %v\n", path, err)

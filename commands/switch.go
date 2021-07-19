@@ -38,19 +38,18 @@ func (cmdArgs *SwitchCommand) GetCommand() *flaggy.Subcommand {
 }
 
 //Execute the list command
-func (cmdArgs *SwitchCommand) Execute() {
-	path, err := common.GetDefaultKubeconfigPath()
-	if err != nil {
-		log.Fatalf("Failed to load default config path.\nError: %v\n", err)
-	}
+func (cmdArgs *SwitchCommand) Execute(path string) {
 	config, err := common.ReadKubeConfigYaml(path)
 	if err != nil {
 		log.Fatalf("Failed to load config from path '%s'.\nError: %v\n", path, err)
 	}
 
-	var context k8s.NamedContext
+	var context *k8s.NamedContext
 	if cmdArgs.contextName != "" {
-		context = getContextByName(config.Contexts, &cmdArgs.contextName)
+		context, err = common.GetContextByName(config, &cmdArgs.contextName)
+		if err != nil {
+			log.Fatalln(err)
+		}
 	} else {
 		context = getTargetConfigWithInteractiveMode(config)
 
@@ -72,7 +71,7 @@ func getContextByName(contexts []k8s.NamedContext, contextName *string) k8s.Name
 	return k8s.NamedContext{}
 }
 
-func getTargetConfigWithInteractiveMode(config *k8s.Config) k8s.NamedContext {
+func getTargetConfigWithInteractiveMode(config *k8s.Config) *k8s.NamedContext {
 	contexts := config.Contexts
 	for index, context := range contexts {
 		activeIndicator := " "
@@ -94,5 +93,5 @@ func getTargetConfigWithInteractiveMode(config *k8s.Config) k8s.NamedContext {
 	if selectedOption < 0 || selectedOption >= len(contexts) {
 		log.Fatalln("Option is not valid. Please enter a valid option number.")
 	}
-	return contexts[selectedOption]
+	return &contexts[selectedOption]
 }

@@ -2,10 +2,12 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/integrii/flaggy"
 	"github.com/pherklotz/kubecfg/commands"
+	"github.com/pherklotz/kubecfg/common"
 )
 
 const VERSION = "1.1"
@@ -26,14 +28,20 @@ func main() {
 	}
 
 	for _, cmd := range cmdList {
-		description := cmd.GetCommand()
-		flaggy.AttachSubcommand(description, 1)
+		commandDescription := cmd.GetCommand()
+		flaggy.AttachSubcommand(commandDescription, 1)
 	}
+
+	targetFile, err := common.GetDefaultKubeconfigPath()
+	if err != nil {
+		log.Fatalf("Failed to load default kubeconfig path.\nError: %v\n", err)
+	}
+	flaggy.String(&targetFile, "t", "target", "The target file for the specified command. The file must be a valid kubeconfig file.")
 	flaggy.Parse()
 
 	for _, cmd := range cmdList {
 		if cmd.GetCommand().Used {
-			cmd.Execute()
+			cmd.Execute(targetFile)
 			os.Exit(0)
 		}
 	}

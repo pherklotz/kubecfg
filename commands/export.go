@@ -47,15 +47,21 @@ func (cmdArgs *ExportCommand) GetCommand() *flaggy.Subcommand {
 }
 
 //Execute the export command
-func (cmdArgs *ExportCommand) Execute() {
+func (cmdArgs *ExportCommand) Execute(targetFile string) {
 	path := cmdArgs.sourceFile
 	sourceConfig, err := common.ReadKubeConfigYaml(path)
 	if err != nil {
 		log.Fatalf("Failed to load config from path '%s'.\nError: %v\n", path, err)
 	}
 	contextName := &cmdArgs.contextName
-	targetFile := cmdArgs.targetFile
-	if targetFile == "" {
+
+	defaultKubecfgFile, err := common.GetDefaultKubeconfigPath()
+	if err != nil {
+		log.Fatalf("Failed to load default kubeconfig path.\nError: %v\n", err)
+	}
+
+	// check if is the default value, if so create a new file name
+	if targetFile == defaultKubecfgFile {
 		reg, err := regexp.Compile("[^A-Za-z0-9]+")
 		if err != nil {
 			log.Fatal(err)
