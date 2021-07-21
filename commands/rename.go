@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/pherklotz/kubecfg/common"
 
@@ -35,39 +35,42 @@ func (cmdArgs *RenameCommand) GetCommand() *flaggy.Subcommand {
 }
 
 //Execute the rename command
-func (cmdArgs *RenameCommand) Execute(path string) {
+func (cmdArgs *RenameCommand) Execute(path string) error {
 	config, err := common.ReadKubeConfigYaml(path)
 	if err != nil {
-		log.Fatalf("Failed to load config from path '%s'.\nError: %v\n", path, err)
+		return err
 	}
-	newConfig := Rename(config, &cmdArgs.from, &cmdArgs.to)
-
+	newConfig, err := rename(config, &cmdArgs.from, &cmdArgs.to)
+	if err != nil {
+		return err
+	}
 	common.WriteKubeConfigYaml(path, newConfig)
+	return nil
 }
 
 // Rename renames the context from oldName to newName
-func Rename(config *k8s.Config, oldName *string, newName *string) *k8s.Config {
+func rename(config *k8s.Config, oldName *string, newName *string) (*k8s.Config, error) {
 	if *newName == "" {
-		log.Fatalln("Please use '-to <name>' to specify the new name.")
+		return nil, fmt.Errorf("Please use '-to <name>' to specify the new name.")
 	}
 
 	context, err := common.GetContextByName(config, oldName)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
 
 	_, err = common.GetContextByName(config, newName)
 	if err == nil {
-		log.Fatalf("There is already a context with the name: '%s'\n", *newName)
+		return nil, fmt.Errorf("There is already a context with the name: '%s'\n", *newName)
 	}
 
 	cluster, err := common.GetClusterByName(config, &context.Context.Cluster)
 	if err != nil {
-		log.Fatalf("No cluster found for context '%s'. %v\n", context.Context.Cluster, err)
+		return nil, fmt.Errorf("No cluster found for context '%s'. %v\n", context.Context.Cluster, err)
 	}
 	user, err := common.GetUserByName(config, &context.Context.AuthInfo)
 	if err != nil {
-		log.Fatalf("No user found for context '%s'. %v\n", context.Context.AuthInfo, err)
+		return nil, fmt.Errorf("No user found for context '%s'. %v\n", context.Context.AuthInfo, err)
 	}
 	cluster.Name = *newName
 	user.Name = *newName
@@ -77,5 +80,5 @@ func Rename(config *k8s.Config, oldName *string, newName *string) *k8s.Config {
 	if config.CurrentContext == *oldName {
 		config.CurrentContext = *newName
 	}
-	return config
+	return config, nil
 }

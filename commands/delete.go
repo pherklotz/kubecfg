@@ -33,7 +33,7 @@ func (cmdArgs *DeleteCommand) GetCommand() *flaggy.Subcommand {
 }
 
 //Execute the delete command
-func (cmdArgs *DeleteCommand) Execute(path string) {
+func (cmdArgs *DeleteCommand) Execute(path string) error {
 	config, err := common.ReadKubeConfigYaml(path)
 	if err != nil {
 		log.Fatalf("Failed to load config from path: %s\nError: %v\n", path, err)
@@ -55,6 +55,7 @@ func (cmdArgs *DeleteCommand) Execute(path string) {
 	common.WriteKubeConfigYaml(path, config)
 
 	log.Printf("Deleted context with name '%s' and associated clusters and users.\n", contextToDelete.Name)
+	return nil
 }
 
 func deleteContext(contexts []k8s.NamedContext, contextNameToDelete string) []k8s.NamedContext {

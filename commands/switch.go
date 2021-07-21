@@ -38,7 +38,7 @@ func (cmdArgs *SwitchCommand) GetCommand() *flaggy.Subcommand {
 }
 
 //Execute the list command
-func (cmdArgs *SwitchCommand) Execute(path string) {
+func (cmdArgs *SwitchCommand) Execute(path string) error {
 	config, err := common.ReadKubeConfigYaml(path)
 	if err != nil {
 		log.Fatalf("Failed to load config from path '%s'.\nError: %v\n", path, err)
@@ -59,6 +59,7 @@ func (cmdArgs *SwitchCommand) Execute(path string) {
 
 	common.WriteKubeConfigYaml(path, config)
 	fmt.Printf("Activate context: %s\n", config.CurrentContext)
+	return nil
 }
 
 func getContextByName(contexts []k8s.NamedContext, contextName *string) k8s.NamedContext {

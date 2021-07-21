@@ -40,7 +40,7 @@ func (cmdArgs *ImportCommand) GetCommand() *flaggy.Subcommand {
 }
 
 //Execute the import command
-func (cmdArgs *ImportCommand) Execute(targetFilePath string) {
+func (cmdArgs *ImportCommand) Execute(targetFilePath string) error {
 	var ctxNameProvider common.ContextNameProvider
 	if cmdArgs.name == "" {
 		ctxNameProvider = &common.RandomNameProvider{}
@@ -49,6 +49,7 @@ func (cmdArgs *ImportCommand) Execute(targetFilePath string) {
 	}
 
 	addConfig(&cmdArgs.filePattern, targetFilePath, &cmdArgs.activate, ctxNameProvider)
+	return nil
 }
 
 // addConfig searchs for kubeconfig files and add them to the default config

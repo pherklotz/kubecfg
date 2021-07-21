@@ -47,7 +47,7 @@ func (cmdArgs *ExportCommand) GetCommand() *flaggy.Subcommand {
 }
 
 //Execute the export command
-func (cmdArgs *ExportCommand) Execute(targetFile string) {
+func (cmdArgs *ExportCommand) Execute(targetFile string) error {
 	path := cmdArgs.sourceFile
 	sourceConfig, err := common.ReadKubeConfigYaml(path)
 	if err != nil {
@@ -98,4 +98,5 @@ func (cmdArgs *ExportCommand) Execute(targetFile string) {
 
 	common.WriteKubeConfigYaml(targetFile, &targetConfig)
 	fmt.Printf("Context '%s' exported to file '%s'", *contextName, targetFile)
+	return nil
 }

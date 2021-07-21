@@ -33,7 +33,7 @@ func (cmdArgs *ListCommand) GetCommand() *flaggy.Subcommand {
 }
 
 //Execute the list command
-func (cmdArgs *ListCommand) Execute(path string) {
+func (cmdArgs *ListCommand) Execute(path string) error {
 	config, err := common.ReadKubeConfigYaml(path)
 	if err != nil {
 		log.Fatalf("Failed to load config from path '%s'.\nError: %v\n", path, err)
@@ -51,4 +51,5 @@ func (cmdArgs *ListCommand) Execute(path string) {
 		}
 		fmt.Printf("%s %s\n", activeIndicator, context.Name)
 	}
+	return nil
 }

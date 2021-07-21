@@ -41,7 +41,10 @@ func main() {
 
 	for _, cmd := range cmdList {
 		if cmd.GetCommand().Used {
-			cmd.Execute(targetFile)
+			err = cmd.Execute(targetFile)
+			if err != nil {
+				log.Fatal(err)
+			}
 			os.Exit(0)
 		}
 	}
