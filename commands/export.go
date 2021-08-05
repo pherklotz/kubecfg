@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strconv"
 
 	"github.com/pherklotz/kubecfg/common"
 
@@ -51,17 +52,11 @@ func (cmdArgs *ExportCommand) Execute(targetFile string) error {
 	path := cmdArgs.sourceFile
 	sourceConfig, err := common.ReadKubeConfigYaml(path)
 	if err != nil {
-		log.Fatalf("Failed to load config from path '%s'.\nError: %v\n", path, err)
+		return fmt.Errorf("failed to load config from path '%s'.\nError: %v", path, err)
 	}
 	contextName := &cmdArgs.contextName
 
-	defaultKubecfgFile, err := common.GetDefaultKubeconfigPath()
-	if err != nil {
-		log.Fatalf("Failed to load default kubeconfig path.\nError: %v\n", err)
-	}
-
-	// check if is the default value, if so create a new file name
-	if targetFile == defaultKubecfgFile {
+	if common.FileExists(targetFile) {
 		reg, err := regexp.Compile("[^A-Za-z0-9]+")
 		if err != nil {
 			log.Fatal(err)
@@ -69,14 +64,13 @@ func (cmdArgs *ExportCommand) Execute(targetFile string) error {
 		cleanContextName := reg.ReplaceAllString(cmdArgs.contextName, "")
 		targetFile = "kubeconf-" + cleanContextName
 	}
-
-	if common.FileExists(targetFile) {
-		log.Fatalf("Target file '%s' exists already.\n", targetFile)
+	for i := 1; common.FileExists(targetFile); i++ {
+		targetFile = targetFile + strconv.Itoa(i)
 	}
 
 	context, err := common.GetContextByName(sourceConfig, contextName)
 	if err != nil {
-		log.Fatalf("Context with name '%s' not found.\n", *contextName)
+		return fmt.Errorf("context with name '%s' not found", *contextName)
 	}
 	cluster, err := common.GetClusterByName(sourceConfig, &context.Context.Cluster)
 	if err != nil {
