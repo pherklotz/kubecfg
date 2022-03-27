@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/integrii/flaggy"
@@ -33,72 +34,57 @@ func (cmdArgs *DeleteCommand) GetCommand() *flaggy.Subcommand {
 }
 
 //Execute the delete command
-func (cmdArgs *DeleteCommand) Execute() {
-	path, err := common.GetDefaultKubeconfigPath()
-	if err != nil {
-		log.Fatalf("Failed to load config.\nError: %v\n", err)
-	}
+func (cmdArgs *DeleteCommand) Execute(path string) error {
 	config, err := common.ReadKubeConfigYaml(path)
 	if err != nil {
-		log.Fatalf("Failed to load config from path: %s\nError: %v\n", path, err)
+		return fmt.Errorf("failed to load config from path: %s\nError: %v", path, err)
 	}
 	contextName := cmdArgs.context
 	if contextName == config.CurrentContext {
-		log.Fatalf("Can not delete the current context '%s'. Change the context first.\n", contextName)
+		return fmt.Errorf("can not delete the current context '%s'. Change the context first", contextName)
 	}
 
 	contextToDelete, err := common.GetContextByName(config, &contextName)
 	if err != nil {
-		log.Fatalf("Context with name '%s' not found\n", contextName)
+		return err
 	}
 
-	config.Contexts = deleteContext(config.Contexts, contextToDelete.Name)
-	config.AuthInfos = deleteUser(config.AuthInfos, contextToDelete.Context.AuthInfo)
-	config.Clusters = deleteCluster(config.Clusters, contextToDelete.Context.Cluster)
+	config.Contexts = filterContexts(config.Contexts, contextToDelete.Name)
+	config.AuthInfos = filterAuthInfos(config.AuthInfos, contextToDelete.Context.AuthInfo)
+	config.Clusters = filterClusters(config.Clusters, contextToDelete.Context.Cluster)
 
 	common.WriteKubeConfigYaml(path, config)
 
-	log.Printf("Deleted context with name '%s' and associated clusters and users.\n", contextToDelete.Name)
+	log.Printf("Deleted context with name '%s' and associated clusters and users.", contextToDelete.Name)
+	return nil
 }
 
-func deleteContext(contexts []k8s.NamedContext, contextNameToDelete string) []k8s.NamedContext {
-	for i, ctx := range contexts {
-		if ctx.Name == contextNameToDelete {
-			if i+1 < len(contexts) {
-				contexts = append(contexts[:i], contexts[i+1:]...)
-			} else {
-				contexts = append(contexts[:i])
-			}
-			break
+func filterAuthInfos(list []k8s.NamedAuthInfo, toDelete string) []k8s.NamedAuthInfo {
+	filteredList := make([]k8s.NamedAuthInfo, 0, len(list))
+	for _, item := range list {
+		if item.Name != toDelete {
+			filteredList = append(filteredList, item)
 		}
 	}
-	return contexts
+	return filteredList
 }
 
-func deleteUser(authInfos []k8s.NamedAuthInfo, toDelete string) []k8s.NamedAuthInfo {
-	for i, authInfo := range authInfos {
-		if authInfo.Name == toDelete {
-			if i+1 < len(authInfos) {
-				authInfos = append(authInfos[:i], authInfos[i+1:]...)
-			} else {
-				authInfos = append(authInfos[:i])
-			}
-			break
+func filterClusters(list []k8s.NamedCluster, toDelete string) []k8s.NamedCluster {
+	filteredList := make([]k8s.NamedCluster, 0, len(list))
+	for _, item := range list {
+		if item.Name != toDelete {
+			filteredList = append(filteredList, item)
 		}
 	}
-	return authInfos
+	return filteredList
 }
 
-func deleteCluster(clusters []k8s.NamedCluster, toDelete string) []k8s.NamedCluster {
-	for i, cluster := range clusters {
-		if cluster.Name == toDelete {
-			if i+1 < len(clusters) {
-				clusters = append(clusters[:i], clusters[i+1:]...)
-			} else {
-				clusters = append(clusters[:i])
-			}
-			break
+func filterContexts(list []k8s.NamedContext, toDelete string) []k8s.NamedContext {
+	filteredList := make([]k8s.NamedContext, 0, len(list))
+	for _, item := range list {
+		if item.Name != toDelete {
+			filteredList = append(filteredList, item)
 		}
 	}
-	return clusters
+	return filteredList
 }

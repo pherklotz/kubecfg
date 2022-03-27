@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strconv"
 
 	"github.com/pherklotz/kubecfg/common"
 
@@ -19,7 +20,6 @@ func NewExportCommand() *ExportCommand {
 	}
 	lc := ExportCommand{
 		sourceFile: defaultPath,
-		targetFile: "",
 	}
 
 	cmd := flaggy.NewSubcommand("export")
@@ -27,7 +27,6 @@ func NewExportCommand() *ExportCommand {
 	cmd.Description = "Exports a context into a new config file."
 	cmd.AddPositionalValue(&lc.contextName, "context name", 1, false, "The name of the context to export.")
 	cmd.String(&lc.sourceFile, "s", "source", "The optional path to the source kubeconfig file.")
-	cmd.String(&lc.targetFile, "t", "target", "The optional path to the new kubeconfig file.")
 
 	lc.command = cmd
 	return &lc
@@ -37,7 +36,6 @@ func NewExportCommand() *ExportCommand {
 type ExportCommand struct {
 	command     *flaggy.Subcommand
 	sourceFile  string
-	targetFile  string
 	contextName string
 }
 
@@ -47,38 +45,37 @@ func (cmdArgs *ExportCommand) GetCommand() *flaggy.Subcommand {
 }
 
 //Execute the export command
-func (cmdArgs *ExportCommand) Execute() {
+func (cmdArgs *ExportCommand) Execute(targetFile string) error {
 	path := cmdArgs.sourceFile
 	sourceConfig, err := common.ReadKubeConfigYaml(path)
 	if err != nil {
-		log.Fatalf("Failed to load config from path '%s'.\nError: %v\n", path, err)
+		return fmt.Errorf("failed to load config from path '%s'.\nError: %v", path, err)
 	}
 	contextName := &cmdArgs.contextName
-	targetFile := cmdArgs.targetFile
-	if targetFile == "" {
+
+	if common.FileExists(targetFile) {
 		reg, err := regexp.Compile("[^A-Za-z0-9]+")
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		cleanContextName := reg.ReplaceAllString(cmdArgs.contextName, "")
 		targetFile = "kubeconf-" + cleanContextName
 	}
-
-	if common.FileExists(targetFile) {
-		log.Fatalf("Target file '%s' exists already.\n", targetFile)
+	for i := 1; common.FileExists(targetFile); i++ {
+		targetFile = targetFile + strconv.Itoa(i)
 	}
 
 	context, err := common.GetContextByName(sourceConfig, contextName)
 	if err != nil {
-		log.Fatalf("Context with name '%s' not found.\n", *contextName)
+		return fmt.Errorf("context with name '%s' not found", *contextName)
 	}
 	cluster, err := common.GetClusterByName(sourceConfig, &context.Context.Cluster)
 	if err != nil {
-		log.Printf("WARN: No associated cluster for context '%s' with name '%s' found.\n", *contextName, context.Context.Cluster)
+		fmt.Printf("WARN: No associated cluster for context '%s' with name '%s' found.\n", *contextName, context.Context.Cluster)
 	}
 	user, err := common.GetUserByName(sourceConfig, &context.Context.AuthInfo)
 	if err != nil {
-		log.Printf("WARN: No associated user for context '%s' with name '%s' found.\n", *contextName, context.Context.AuthInfo)
+		fmt.Printf("WARN: No associated user for context '%s' with name '%s' found.\n", *contextName, context.Context.AuthInfo)
 	}
 
 	targetConfig := k8s.Config{
@@ -92,4 +89,5 @@ func (cmdArgs *ExportCommand) Execute() {
 
 	common.WriteKubeConfigYaml(targetFile, &targetConfig)
 	fmt.Printf("Context '%s' exported to file '%s'", *contextName, targetFile)
+	return nil
 }

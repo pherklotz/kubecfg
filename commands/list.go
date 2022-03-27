@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"log"
 	"sort"
 
 	"github.com/pherklotz/kubecfg/common"
@@ -12,16 +11,11 @@ import (
 
 //NewListCommand creates a new ListCommand
 func NewListCommand() *ListCommand {
-	defaultPath, err := common.GetDefaultKubeconfigPath()
-	if err != nil {
-		log.Fatalln("Can not determine default path: ", err)
-	}
-	lc := ListCommand{sourceFile: defaultPath}
+	lc := ListCommand{}
 
 	cmd := flaggy.NewSubcommand("list")
 	cmd.ShortName = "l"
 	cmd.Description = "Lists all contexts in the config file."
-	cmd.AddPositionalValue(&lc.sourceFile, "source", 1, false, "The optional path to the kubeconfig file.")
 
 	lc.command = cmd
 	return &lc
@@ -29,8 +23,7 @@ func NewListCommand() *ListCommand {
 
 //ListCommand the list command struct
 type ListCommand struct {
-	command    *flaggy.Subcommand
-	sourceFile string
+	command *flaggy.Subcommand
 }
 
 // GetCommand returns the flaggy Subcommand to parse the command line
@@ -39,11 +32,10 @@ func (cmdArgs *ListCommand) GetCommand() *flaggy.Subcommand {
 }
 
 //Execute the list command
-func (cmdArgs *ListCommand) Execute() {
-	path := cmdArgs.sourceFile
+func (cmdArgs *ListCommand) Execute(path string) error {
 	config, err := common.ReadKubeConfigYaml(path)
 	if err != nil {
-		log.Fatalf("Failed to load config from path '%s'.\nError: %v\n", path, err)
+		return fmt.Errorf("Failed to load config from path '%s'.\nError: %v\n", path, err)
 	}
 	contexts := config.Contexts
 
@@ -58,4 +50,5 @@ func (cmdArgs *ListCommand) Execute() {
 		}
 		fmt.Printf("%s %s\n", activeIndicator, context.Name)
 	}
+	return nil
 }

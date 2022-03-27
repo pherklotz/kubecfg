@@ -3,25 +3,14 @@ package common
 import (
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 
+	"github.com/pherklotz/kubecfg/tests"
 	"github.com/stretchr/testify/assert"
 	k8s "k8s.io/client-go/tools/clientcmd/api/v1"
 )
 
 const TEST_RESOURCE_DIR = "../tests/resources/"
-
-func getTestWorkingDir() string {
-	// to prevent access denied errors in github actions
-	workspace := os.Getenv("GITHUB_WORKSPACE")
-	if workspace == "" {
-		workspace = "../tests/temp/"
-	} else if !strings.HasSuffix(workspace, string(os.PathSeparator)) {
-		workspace = workspace + string(os.PathSeparator)
-	}
-	return workspace
-}
 
 func TestReadKubeConfigYaml_success(t *testing.T) {
 	config, err := ReadKubeConfigYaml(TEST_RESOURCE_DIR + "test.yaml")
@@ -78,7 +67,7 @@ func TestIsRegularFile(t *testing.T) {
 
 func TestCopyFile(t *testing.T) {
 	source := TEST_RESOURCE_DIR + "test.yaml"
-	targetDir := getTestWorkingDir()
+	targetDir := tests.GetTestWorkingDir()
 	err := os.MkdirAll(targetDir, os.ModeDir)
 	assert.Nil(t, err)
 
@@ -94,7 +83,7 @@ func TestCopyFile(t *testing.T) {
 }
 
 func TestWriteAndReadKubeConfigYaml(t *testing.T) {
-	target := getTestWorkingDir() + "new_config.yaml"
+	target := tests.GetTestWorkingDir() + "new_config.yaml"
 	defer os.Remove(target)
 	expectedConfig := k8s.Config{}
 	WriteKubeConfigYaml(target, &expectedConfig)

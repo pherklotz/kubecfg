@@ -40,7 +40,7 @@ func (cmdArgs *ImportCommand) GetCommand() *flaggy.Subcommand {
 }
 
 //Execute the import command
-func (cmdArgs *ImportCommand) Execute() {
+func (cmdArgs *ImportCommand) Execute(targetFilePath string) error {
 	var ctxNameProvider common.ContextNameProvider
 	if cmdArgs.name == "" {
 		ctxNameProvider = &common.RandomNameProvider{}
@@ -48,34 +48,30 @@ func (cmdArgs *ImportCommand) Execute() {
 		ctxNameProvider = &common.SeedNameProvider{Seed: cmdArgs.name}
 	}
 
-	addConfig(&cmdArgs.filePattern, &cmdArgs.activate, ctxNameProvider)
+	return addConfig(&cmdArgs.filePattern, targetFilePath, &cmdArgs.activate, ctxNameProvider)
 }
 
 // addConfig searchs for kubeconfig files and add them to the default config
-func addConfig(sourcePattern *string, activate *bool, ctxNameProvider common.ContextNameProvider) {
+func addConfig(sourcePattern *string, targetConfFile string, activate *bool, ctxNameProvider common.ContextNameProvider) error {
 	configFiles, err := filepath.Glob(*sourcePattern)
 	if err != nil {
-		log.Fatalln("Wrong source file pattern '", *sourcePattern, "':", err)
+		return fmt.Errorf("Wrong source file pattern '%v': %e", *sourcePattern, err)
 	}
 	foundFilesCount := len(configFiles)
 	if foundFilesCount == 0 {
 		log.Println("Found no matching files to source pattern: ", *sourcePattern)
 	}
 
-	targetConfFile, err := common.GetDefaultKubeconfigPath()
-	if err != nil {
-		log.Fatalln("can not read user home: ", err)
-	}
 	targetConf, err := common.ReadKubeConfigYaml(targetConfFile)
 	if err != nil {
-		log.Fatalln("Can not parse kubeconfig yaml in file '", targetConfFile, "':", err)
+		return fmt.Errorf("Can not parse kubeconfig yaml in file '%s': %v", targetConfFile, err)
 	}
 
 	for i := 0; i < foundFilesCount; i++ {
 		sourceFile := configFiles[i]
 		sourceConf, err := common.ReadKubeConfigYaml(sourceFile)
 		if err != nil {
-			log.Fatalln("Can not parse kubeconfig yaml in file '", sourceFile, "':", err)
+			return fmt.Errorf("Can not parse kubeconfig yaml in file '%s': %v", sourceFile, err)
 		}
 		fmt.Printf("Add kubeconf from '%s' to '%s'\n", sourceFile, targetConfFile)
 
@@ -84,12 +80,12 @@ func addConfig(sourcePattern *string, activate *bool, ctxNameProvider common.Con
 			oldName := context.Name
 			cluster, err := findCluster(sourceConf.Clusters, context.Context.Cluster)
 			if err != nil {
-				log.Fatalf("No cluster with name '%s' in file '%s'. Error: %v", context.Context.Cluster, sourceFile, err)
+				return fmt.Errorf("No cluster with name '%s' in file '%s'. Error: %v", context.Context.Cluster, sourceFile, err)
 			}
 
 			user, err := findUser(sourceConf.AuthInfos, context.Context.AuthInfo)
 			if err != nil {
-				log.Fatalf("No user with name '%s' in file '%s'. Error: %v", context.Context.AuthInfo, sourceFile, err)
+				return fmt.Errorf("No user with name '%s' in file '%s'. Error: %v", context.Context.AuthInfo, sourceFile, err)
 			}
 
 			newName := getUniqueName(sourceConf.Contexts, ctxNameProvider)
@@ -114,9 +110,10 @@ func addConfig(sourcePattern *string, activate *bool, ctxNameProvider common.Con
 	}
 	err = common.CopyFile(targetConfFile, targetConfFile+".bak")
 	if err != nil {
-		log.Fatalf("Could no create backup of target '%s': %v", targetConfFile, err)
+		return fmt.Errorf("Could no create backup of target '%s': %v", targetConfFile, err)
 	}
 	common.WriteKubeConfigYaml(targetConfFile, targetConf)
+	return nil
 }
 
 func getUniqueName(contexts []k8s.NamedContext, nameProvider common.ContextNameProvider) string {
