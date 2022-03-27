@@ -3,7 +3,6 @@ package commands
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -41,18 +40,20 @@ func (cmdArgs *SwitchCommand) GetCommand() *flaggy.Subcommand {
 func (cmdArgs *SwitchCommand) Execute(path string) error {
 	config, err := common.ReadKubeConfigYaml(path)
 	if err != nil {
-		log.Fatalf("Failed to load config from path '%s'.\nError: %v\n", path, err)
+		return fmt.Errorf("Failed to load config from path '%s'.\nError: %v\n", path, err)
 	}
 
 	var context *k8s.NamedContext
 	if cmdArgs.contextName != "" {
 		context, err = common.GetContextByName(config, &cmdArgs.contextName)
 		if err != nil {
-			log.Fatalln(err)
+			return err
 		}
 	} else {
-		context = getTargetConfigWithInteractiveMode(config)
-
+		context, err = getTargetConfigWithInteractiveMode(config)
+		if err != nil {
+			return err
+		}
 	}
 
 	config.CurrentContext = context.Name
@@ -62,17 +63,16 @@ func (cmdArgs *SwitchCommand) Execute(path string) error {
 	return nil
 }
 
-func getContextByName(contexts []k8s.NamedContext, contextName *string) k8s.NamedContext {
+func getContextByName(contexts []k8s.NamedContext, contextName *string) (k8s.NamedContext, error) {
 	for _, context := range contexts {
 		if context.Name == *contextName {
-			return context
+			return context, nil
 		}
 	}
-	log.Fatalf("Unknown context name '%s'. Use 'kubecfg list' to see available contexts.\n", *contextName)
-	return k8s.NamedContext{}
+	return k8s.NamedContext{}, fmt.Errorf("Unknown context name '%s'. Use 'kubecfg list' to see available contexts.\n", *contextName)
 }
 
-func getTargetConfigWithInteractiveMode(config *k8s.Config) *k8s.NamedContext {
+func getTargetConfigWithInteractiveMode(config *k8s.Config) (*k8s.NamedContext, error) {
 	contexts := config.Contexts
 	for index, context := range contexts {
 		activeIndicator := " "
@@ -85,14 +85,14 @@ func getTargetConfigWithInteractiveMode(config *k8s.Config) *k8s.NamedContext {
 	reader := bufio.NewReader(os.Stdin)
 	optionString, err := reader.ReadString('\n')
 	if err != nil {
-		log.Fatal("Can not read selected option.", err)
+		return nil, err
 	}
 	selectedOption, err := strconv.Atoi(strings.TrimSpace(optionString))
 	if err != nil {
-		log.Fatal("Please enter a valid option number", err)
+		return nil, err
 	}
 	if selectedOption < 0 || selectedOption >= len(contexts) {
-		log.Fatalln("Option is not valid. Please enter a valid option number.")
+		return nil, fmt.Errorf("Option is not valid. Please enter a valid option number.")
 	}
-	return &contexts[selectedOption]
+	return &contexts[selectedOption], nil
 }

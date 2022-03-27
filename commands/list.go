@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"log"
 	"sort"
 
 	"github.com/pherklotz/kubecfg/common"
@@ -36,7 +35,7 @@ func (cmdArgs *ListCommand) GetCommand() *flaggy.Subcommand {
 func (cmdArgs *ListCommand) Execute(path string) error {
 	config, err := common.ReadKubeConfigYaml(path)
 	if err != nil {
-		log.Fatalf("Failed to load config from path '%s'.\nError: %v\n", path, err)
+		return fmt.Errorf("Failed to load config from path '%s'.\nError: %v\n", path, err)
 	}
 	contexts := config.Contexts
 

@@ -20,7 +20,6 @@ func NewExportCommand() *ExportCommand {
 	}
 	lc := ExportCommand{
 		sourceFile: defaultPath,
-		targetFile: "",
 	}
 
 	cmd := flaggy.NewSubcommand("export")
@@ -28,7 +27,6 @@ func NewExportCommand() *ExportCommand {
 	cmd.Description = "Exports a context into a new config file."
 	cmd.AddPositionalValue(&lc.contextName, "context name", 1, false, "The name of the context to export.")
 	cmd.String(&lc.sourceFile, "s", "source", "The optional path to the source kubeconfig file.")
-	cmd.String(&lc.targetFile, "t", "target", "The optional path to the new kubeconfig file.")
 
 	lc.command = cmd
 	return &lc
@@ -38,7 +36,6 @@ func NewExportCommand() *ExportCommand {
 type ExportCommand struct {
 	command     *flaggy.Subcommand
 	sourceFile  string
-	targetFile  string
 	contextName string
 }
 
@@ -59,7 +56,7 @@ func (cmdArgs *ExportCommand) Execute(targetFile string) error {
 	if common.FileExists(targetFile) {
 		reg, err := regexp.Compile("[^A-Za-z0-9]+")
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		cleanContextName := reg.ReplaceAllString(cmdArgs.contextName, "")
 		targetFile = "kubeconf-" + cleanContextName
@@ -74,11 +71,11 @@ func (cmdArgs *ExportCommand) Execute(targetFile string) error {
 	}
 	cluster, err := common.GetClusterByName(sourceConfig, &context.Context.Cluster)
 	if err != nil {
-		log.Printf("WARN: No associated cluster for context '%s' with name '%s' found.\n", *contextName, context.Context.Cluster)
+		fmt.Printf("WARN: No associated cluster for context '%s' with name '%s' found.\n", *contextName, context.Context.Cluster)
 	}
 	user, err := common.GetUserByName(sourceConfig, &context.Context.AuthInfo)
 	if err != nil {
-		log.Printf("WARN: No associated user for context '%s' with name '%s' found.\n", *contextName, context.Context.AuthInfo)
+		fmt.Printf("WARN: No associated user for context '%s' with name '%s' found.\n", *contextName, context.Context.AuthInfo)
 	}
 
 	targetConfig := k8s.Config{
