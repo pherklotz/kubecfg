@@ -21,5 +21,8 @@ jobs:
     - name: Build
       run: go build -v ./...
 
-    - name: Test
+    - name: Unit Test
       run: go test -v ./...
+
+    - name: Integration Test
+      run: itest.sh

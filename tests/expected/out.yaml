@@ -1,0 +1,17 @@
+clusters:
+- cluster:
+    certificate-authority-data: Q2x1c3RlckJfQXV0aERhdGE=
+    server: https://example.com/Cluster/B
+  name: foo
+contexts:
+- context:
+    cluster: foo
+    user: foo
+  name: foo
+current-context: foo
+preferences: {}
+users:
+- name: foo
+  user:
+    client-certificate-data: VXNlckJfQ2xpZW50Q2VydERhdGE=
+    client-key-data: VXNlckJfQ2xpZW50S2V5RGF0YQ==
