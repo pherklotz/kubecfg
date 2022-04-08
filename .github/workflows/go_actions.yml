@@ -25,4 +25,6 @@ jobs:
       run: go test -v ./...
 
     - name: Integration Test
-      run: itest.sh
+      run:  |
+        chmod +x "${GITHUB_WORKSPACE}/itest.sh"
+        "${GITHUB_WORKSPACE}/itest.sh"
