@@ -25,6 +25,7 @@ func main() {
 		commands.NewListCommand(),
 		commands.NewRenameCommand(),
 		commands.NewSwitchCommand(),
+		commands.NewViewCommand(),
 	}
 
 	for _, cmd := range cmdList {

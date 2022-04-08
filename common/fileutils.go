@@ -97,3 +97,11 @@ func WriteKubeConfigYaml(target string, conf *k8s.Config) {
 		log.Fatalf("Can not write target yaml '%s': %v\n", target, err)
 	}
 }
+
+func ConfigToString(conf *k8s.Config) (string, error) {
+	yamlBytes, err := yaml.Marshal(&conf)
+	if err != nil {
+		return "", err
+	}
+	return string(yamlBytes), nil
+}
